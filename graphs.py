@@ -2,7 +2,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 from database import database
-from utils import get_user_choice, parse_date
+from utils import get_user_choice, parse_date, input_with_exit
 
 """Functions for plotting graphs related to expenses and income"""
 
@@ -14,37 +14,37 @@ def plot_expense_summary() -> None:
       2. Bar Chart (Expenses by Category £)
       3. Line Chart (Income vs Expenses over Time)
     """
-    options = ['1', '2', '3']
-
     print("\nChoose a chart type:")
     print(" 1. Pie Chart (Expenses by Category %)")
     print(" 2. Bar Chart (Expenses by Category £)")
     print(" 3. Line Chart (Income vs Expenses over Time)")
 
-    choice = get_user_choice("Select an option (1-3): ", options)
+    choice = input_with_exit("Select a chart type (1-3)", cast=int)
+    if choice is None:
+        print("Cancelled plotting.")
+        return
+    if choice not in [1, 2, 3]:
+        print("Invalid choice. Please select 1, 2, or 3.")
+        return
 
     summary = database.summarise_expenses()
-
-    if not summary:
+    if not summary and choice in [1, 2]:
         print("No expenses to plot.")
         return
 
-    # Pie Chart
-    if choice == '1':
-        categories = [category for category, total in summary]
-        totals = [total for category, total in summary]
+    categories = [category for category, total in summary]
+    totals = [total for category, total in summary]
 
+    # Pie Chart
+    if choice == 1:
         plt.figure(figsize=(6,6))
-        plt.pie(totals, labels=categories, autopct='%1.1f%%', startangle=140)  # Pie chart
+        plt.pie(totals, labels=categories, autopct='%1.1f%%', startangle=140)
         plt.title("Expenses by Category")
         plt.show()
 
     # Bar Chart
-    elif choice == '2':
-        categories = [category for category, total in summary]
-        totals = [total for category, total in summary]
-
-        plt.figure(figsize=(8,5))  # Wider figure
+    elif choice == 2:
+        plt.figure(figsize=(8,5))
         plt.bar(categories, totals)
         plt.xlabel("Category")
         plt.ylabel("Total Spent (£)")
@@ -52,44 +52,34 @@ def plot_expense_summary() -> None:
         plt.show()
 
     # Line Chart
-    elif choice == '3':
+    elif choice == 3:
         expenses = database.get_all_expenses()
         income = database.get_all_income()
-
         if not expenses and not income:
             print("No income or expenses to plot.")
             return
+    
+        def sum_by_date(rows):
+            totals = defaultdict(float)
+            for row in rows:
+                date, amount = parse_date(row)
+                totals[date.date()] += amount
+            return totals
+        
+        expense_totals = sum_by_date(expenses)
+        income_totals = sum_by_date(income)
 
-        # Sum expenses by date
-        expense_totals = defaultdict(float)
-        for row in expenses:
-            date, amount = parse_date(row)
-            date_only = date.date()  # Only keep date
-            expense_totals[date_only] += amount
-
-        # Sum income by date
-        income_totals = defaultdict(float)
-        for row in income:
-            date, amount = parse_date(row)
-            date_only = date.date()
-            income_totals[date_only] += amount
-
-        # Get full range of dates
-        all_dates = sorted(set(expense_totals.keys()) | set(income_totals.keys()))
-        if all_dates:
-            start_date = all_dates[0]
-            end_date = all_dates[-1]
-            full_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-        else:
+        # Full date range
+        all_dates = sorted(set(expense_totals) | set(income_totals))
+        if not all_dates:
             print("No valid dates to plot.")
             return
+        start, end = all_dates[0], all_dates[-1]
+        full_range = [start + timedelta(days=i) for i in range((end - start).days + 1)]
 
-        # Build cumulative sums
-        expense_values = []
-        income_values = []
-        running_expense = 0
-        running_income = 0
-
+        # Cumulative sums
+        expense_values, income_values = [], []
+        running_expense = running_income = 0
         for d in full_range:
             running_expense += expense_totals.get(d, 0)
             running_income += income_totals.get(d, 0)
@@ -108,6 +98,3 @@ def plot_expense_summary() -> None:
         plt.xticks(rotation=45)
         plt.tight_layout()
         plt.show()
-
-    else:
-        print("Invalid choice. Please select 1, 2, or 3.")
