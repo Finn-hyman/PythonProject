@@ -1,7 +1,7 @@
 class Income:
-    def __init__(self, description, amount):
+    def __init__(self, description, amount) -> None:
         self.description = description
         self.amount = amount
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Income(description={self.description}, amount={self.amount})"
