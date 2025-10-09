@@ -187,7 +187,7 @@ def manage_income() -> None:
         else:
             print("Invalid choice. Please select a valid option.")
 
-def main_menu():
+def main_menu() -> None:
     """
     Main menu for the Expense Tracker CLI
     """
@@ -202,7 +202,7 @@ def main_menu():
         print("7. Export Data to CSV")
         print("8. Exit")
 
-        choice = get_user_choice("Select an option (1-7): ", [str(i) for i in range(1, 8)])
+        choice = get_user_choice("Select an option (1-8): ", [str(i) for i in range(1, 9)])
 
         if choice == "1":
             expense = get_expense_from_user()
@@ -247,7 +247,7 @@ def main_menu():
             break
 
         else:
-            print("❌ Invalid choice. Please select a number between 1 and 7.")
+            print("❌ Invalid choice. Please select a number between 1 and 8.")
 
 def main() -> None:
     """

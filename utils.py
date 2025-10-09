@@ -76,7 +76,10 @@ def parse_date(entry_str: str) -> tuple[datetime, float]:
         
         date_part = clean_str.split(" on [", 1)[1]
         date_str = date_part.split("]", 1)[0].strip()
-        date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")  # include time
+        try:
+            date = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            date = datetime.strptime(date_str, "%Y-%m-%d")
 
         before_date = clean_str.split(" on [")[0]
         if " - £" in before_date:

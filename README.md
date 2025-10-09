@@ -57,3 +57,15 @@ Run the software from main.py and follow the on screen prompts
 ### Income vs Expenses Over Time
 
 ![alt text](image-3.png)
+
+### Testing with Mock Data
+You can generate fake expenses and income to safely test visualisations, summaries, and other functionality without it affecting real data. 
+
+### Running the Mock Data
+Go into terminal and type 'python run_fake_db.py'
+
+![alt text](image-6.png)
+
+### Example output
+
+![alt text](image-7.png)
